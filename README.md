@@ -1,1 +1,1 @@
-This is a project for CPSC 332 Database class.
+[HTML/CSS Frontend] ←HTTP→ [PHP Backend] ←MySQL→ [Database]
