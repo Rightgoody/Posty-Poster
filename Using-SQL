@@ -1,0 +1,26 @@
+Using Mysql:
+
+creating a user in mysql:
+CREATE USER YOUR-USERNAME-HERE@'localhost' IDENTIFIED BY YOUR-PASSWORD-HERE;
+GRANT ALL PRIVILEGES ON my_database.* TO 'meow'@'localhost';
+FLUSH PRIVILEGES;
+
+
+Granting perms to user:
+GRANT ALL PRIVILEGES ON posty_post_data.* TO YOUR-USERNMAE-HERE@'localhost';
+FLUSH PRIVILEGES;
+
+dumping sql data (exporting)
+mysqldump -u YOUR-USERNAME-HERE -p posty_post_data > posty_post_data.sql
+
+importing sql data (importing)
+	> log in from terminal << mysql -u YOUR-USERNAME-HERE -p >>
+		> create a target db << CREATE DATABASE your_database; >>
+		> EXIT;
+	> import the sql file to target db << mysql -u USERNAME-HERE -p your_database < /path/to/your/file.sql >>
+
+
+
+
+
+

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Reddit Clone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .post {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .post-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+        .reply {
+            margin-left: 30px;
+            padding: 10px;
+            border-left: 3px solid #eee;
+            margin-top: 10px;
+        }
+        .auth-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 15px;
+            background: #0079d3;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple Reddit Clone</h1>
+    
+    <!-- Authentication Section -->
+    <div id="auth-section" class="auth-section">
+        <h2>Login / Register</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-btn">Login</button>
+        <button id="register-btn">Register</button>
+    </div>
+    
+    <!-- Post Creation (visible when logged in) -->
+    <div id="post-creation" class="hidden">
+        <h2>Create New Post</h2>
+        <input type="text" id="post-title" placeholder="Title">
+        <textarea id="post-content" placeholder="Your post content"></textarea>
+        <button id="create-post-btn">Submit Post</button>
+    </div>
+    
+    <!-- Posts List -->
+    <div id="posts-container">
+        <h2>Recent Posts</h2>
+        <!-- Posts will be loaded here -->
+    </div>
+    
+    <script>
+        let currentUser = null;
+        
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const postCreation = document.getElementById('post-creation');
+        const postsContainer = document.getElementById('posts-container');
+        
+        // Event Listeners
+        document.getElementById('login-btn').addEventListener('click', login);
+        document.getElementById('register-btn').addEventListener('click', register);
+        document.getElementById('create-post-btn').addEventListener('click', createPost);
+        
+        // Load posts when page loads
+        document.addEventListener('DOMContentLoaded', loadPosts);
+        
+        // API Functions
+        async function apiRequest(action, data = {}) {
+            const url = `api.php?action=${action}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            return await response.json();
+        }
+        
+        // Authentication Functions
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const response = await apiRequest('login', { username, password });
+            
+            if (response.error) {
+                alert(response.error);
+            } else {
+                currentUser = response.user;
+                authSection.classList.add('hidden');
+                postCreation.classList.remove('hidden');
+                loadPosts();
+            }
+        }
+        
+        async function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const response = await apiRequest('register', { username, password });
+            
+            if (response.error) {
+                alert(response.error);
+            } else {
+                alert('Registration successful. Please login.');
+            }
+        }
+        
+        // Post Functions
+        async function createPost() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            
+            const response = await apiRequest('create_post', {
+                user_id: currentUser.id,
+                title,
+                content
+            });
+            
+            if (response.error) {
+                alert(response.error);
+            } else {
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+                loadPosts();
+            }
+        }
+        
+        async function loadPosts() {
+            const response = await fetch('api.php?action=get_posts');
+            const data = await response.json();
+            
+            postsContainer.innerHTML = '<h2>Recent Posts</h2>';
+            
+            if (data.posts && data.posts.length > 0) {
+                data.posts.forEach(post => {
+                    const postElement = document.createElement('div');
+                    postElement.className = 'post';
+                    postElement.innerHTML = `
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-meta">Posted by ${post.username} on ${new Date(post.created_at).toLocaleString()}</div>
+                        <div class="post-content">${post.content}</div>
+                        <div class="replies" id="replies-${post.id}"></div>
+                        ${currentUser ? `
+                            <textarea id="reply-content-${post.id}" placeholder="Your reply"></textarea>
+                            <button onclick="createReply(${post.id})">Reply</button>
+                        ` : ''}
+                    `;
+                    postsContainer.appendChild(postElement);
+                    loadReplies(post.id);
+                });
+            } else {
+                postsContainer.innerHTML += '<p>No posts yet. Be the first to post!</p>';
+            }
+        }
+        
+        async function loadReplies(postId) {
+            const response = await fetch(`api.php?action=get_replies&post_id=${postId}`);
+            const data = await response.json();
+            
+            const repliesContainer = document.getElementById(`replies-${postId}`);
+            if (repliesContainer) {
+                repliesContainer.innerHTML = '';
+                
+                if (data.replies && data.replies.length > 0) {
+                    data.replies.forEach(reply => {
+                        const replyElement = document.createElement('div');
+                        replyElement.className = 'reply';
+                        replyElement.innerHTML = `
+                            <div class="reply-meta">${reply.username} replied on ${new Date(reply.created_at).toLocaleString()}</div>
+                            <div class="reply-content">${reply.content}</div>
+                        `;
+                        repliesContainer.appendChild(replyElement);
+                    });
+                }
+            }
+        }
+        
+        async function createReply(postId) {
+            const content = document.getElementById(`reply-content-${postId}`).value;
+            
+            const response = await apiRequest('create_reply', {
+                post_id: postId,
+                user_id: currentUser.id,
+                content
+            });
+            
+            if (response.error) {
+                alert(response.error);
+            } else {
+                document.getElementById(`reply-content-${postId}`).value = '';
+                loadReplies(postId);
+            }
+        }
+        
+        // Make createReply available globally
+        window.createReply = createReply;
+    </script>
+</body>
+</html>
