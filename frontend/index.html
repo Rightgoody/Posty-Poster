@@ -62,11 +62,12 @@
     
     <!-- Authentication Section -->
     <div id="auth-section" class="auth-section">
-        <h2>Login / Register</h2>
+        <h2>Login</h2>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
         <button id="login-btn">Login</button>
-        <button id="register-btn">Register</button>
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
+        
     </div>
     
     <!-- Post Creation (visible when logged in) -->
@@ -93,7 +94,6 @@
         
         // Event Listeners
         document.getElementById('login-btn').addEventListener('click', login);
-        document.getElementById('register-btn').addEventListener('click', register);
         document.getElementById('create-post-btn').addEventListener('click', createPost);
         
         // Load posts when page loads
@@ -129,18 +129,6 @@
             }
         }
         
-        async function register() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            const response = await apiRequest('register', { username, password });
-            
-            if (response.error) {
-                alert(response.error);
-            } else {
-                alert('Registration successful. Please login.');
-            }
-        }
         
         // Post Functions
         async function createPost() {
