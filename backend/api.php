@@ -2,7 +2,7 @@
 header("Content-Type: application/json");
 
 // Database connection
-$db = new mysqli('localhost', 'meow', 'plumeria', 'posty_post_data');
+$db = new mysqli('localhost', 'meow', 'plumeria', 'ReadIt_data');
 
 if ($db->connect_error) {
     die(json_encode(['error' => 'Database connection failed']));
@@ -53,20 +53,25 @@ switch ($action) {
 
 // User registration (INSECURE - for demo only)
 function registerUser($db, $data) {
-    if (empty($data['username']) || empty($data['password'])) {
-        echo json_encode(['error' => 'Username and password required']);
+    if (empty($data['email']) || empty($data['username']) || empty($data['password'])) {
+        echo json_encode(['error' => 'Email, username, and password are required']);
         return;
     }
-    
-    $stmt = $db->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-    $stmt->bind_param("ss", $data['username'], $data['password']);
-    
+
+    $email = $data['email'];
+    $username = $data['username'];
+    $password = $data['password']; // Insecure: store hashed password in real apps
+
+    $stmt = $db->prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $email, $username, $password);
+
     if ($stmt->execute()) {
         echo json_encode(['message' => 'User registered']);
     } else {
-        echo json_encode(['error' => 'Registration failed']);
+        echo json_encode(['error' => 'Registration failed — maybe username/email already exists']);
     }
 }
+
 
 // User login (INSECURE - for demo only)
 function loginUser($db, $data) {
