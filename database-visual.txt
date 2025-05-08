@@ -1,0 +1,47 @@
+mysql> SHOW TABLES;
++---------------------------+
+| Tables_in_posty_post_data |
++---------------------------+
+| posts                     |
+| replies                   |
+| users                     |
++---------------------------+
+3 rows in set (0.00 sec)
+
+mysql> DESCRIBE posts;
++------------+--------------+------+-----+-------------------+-------------------+
+| Field      | Type         | Null | Key | Default           | Extra             |
++------------+--------------+------+-----+-------------------+-------------------+
+| id         | int          | NO   | PRI | NULL              | auto_increment    |
+| user_id    | int          | NO   | MUL | NULL              |                   |
+| title      | varchar(100) | NO   | MUL | NULL              |                   |
+| content    | text         | NO   |     | NULL              |                   |
+| created_at | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++------------+--------------+------+-----+-------------------+-------------------+
+5 rows in set (0.01 sec)
+
+mysql> DESCRIBE replies;
++------------+-----------+------+-----+-------------------+-------------------+
+| Field      | Type      | Null | Key | Default           | Extra             |
++------------+-----------+------+-----+-------------------+-------------------+
+| id         | int       | NO   | PRI | NULL              | auto_increment    |
+| post_id    | int       | NO   | MUL | NULL              |                   |
+| user_id    | int       | NO   | MUL | NULL              |                   |
+| content    | text      | NO   |     | NULL              |                   |
+| created_at | timestamp | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++------------+-----------+------+-----+-------------------+-------------------+
+5 rows in set (0.00 sec)
+
+mysql> DESCRIBE users;
++------------+--------------+------+-----+-------------------+-------------------+
+| Field      | Type         | Null | Key | Default           | Extra             |
++------------+--------------+------+-----+-------------------+-------------------+
+| id         | int          | NO   | PRI | NULL              | auto_increment    |
+| email      | varchar(255) | NO   | UNI | NULL              |                   |
+| username   | varchar(30)  | NO   | UNI | NULL              |                   |
+| password   | varchar(255) | NO   |     | NULL              |                   |
+| created_at | timestamp    | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
++------------+--------------+------+-----+-------------------+-------------------+
+5 rows in set (0.01 sec)
+
+
