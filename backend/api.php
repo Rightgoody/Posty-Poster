@@ -13,6 +13,18 @@ ini_set('error_log', '/var/log/php/readit_api.log');
 // Load configuration
 require_once __DIR__ . '/config.php';
 
+// Detect if running from the command line
+if (php_sapi_name() === 'cli') {
+    // Simulate HTTP variables for CLI
+    $method = $argv[1] ?? 'GET'; // First argument is the HTTP method
+    parse_str($argv[2] ?? '', $_GET); // Second argument is the query string
+    $input = json_decode($argv[3] ?? '{}', true); // Third argument is the JSON input
+} else {
+    // Web server environment
+    $method = $_SERVER['REQUEST_METHOD'];
+    $input = json_decode(file_get_contents('php://input'), true) ?? [];
+}
+
 // Database connection
 $db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
@@ -21,9 +33,7 @@ if ($db->connect_error) {
     die(json_encode(['error' => 'Service unavailable']));
 }
 
-// Get request data
-$method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true) ?? [];
+// Get action from query string
 $action = $_GET['action'] ?? '';
 
 // Rate limiting function
