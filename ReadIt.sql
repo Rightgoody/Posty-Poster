@@ -1,5 +1,4 @@
--- MySQL database setup for ReadIt
-
+-- MySQL 8.0+ Schema with proper constraints
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS replies;
@@ -10,19 +9,21 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(255) NOT NULL,
-  username VARCHAR(255) NOT NULL UNIQUE,
-  password VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  email VARCHAR(255) NOT NULL UNIQUE,
+  username VARCHAR(30) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,  -- Will store hashed passwords
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_username (username)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE posts (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
-  title VARCHAR(255) NOT NULL,
+  title VARCHAR(100) NOT NULL,
   content TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FULLTEXT INDEX ft_content (title, content)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE replies (
@@ -34,7 +35,3 @@ CREATE TABLE replies (
   FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
-CREATE INDEX idx_posts_user ON posts(user_id);
-CREATE INDEX idx_replies_post ON replies(post_id);
-CREATE INDEX idx_replies_user ON replies(user_id);
