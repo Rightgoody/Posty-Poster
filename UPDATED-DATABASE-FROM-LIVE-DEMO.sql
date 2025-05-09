@@ -32,7 +32,7 @@ CREATE TABLE `posts` (
   KEY `user_id` (`user_id`),
   FULLTEXT KEY `ft_content` (`title`,`content`),
   CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `posts` (
 
 LOCK TABLES `posts` WRITE;
 /*!40000 ALTER TABLE `posts` DISABLE KEYS */;
-INSERT INTO `posts` VALUES (1,1,'test post','meow','2025-05-09 00:00:56'),(2,3,'Man I love jellybeans','mmmmm jellybeans..... Jelly Jelly jellybeans... They taste like buttons yummy yommy yommer yummemyumymyumymymymuymym','2025-05-09 06:19:24'),(3,2,'BRUH','BRUUUUUHH BRUUHHRBURBRHRH','2025-05-09 06:21:19'),(4,1,'guys..','Yo chat is anyone schizophrenic??? Just me?? damn bro...','2025-05-09 06:22:27'),(5,3,'WOOOOFOFOOWOFOWFO','AHHAHHAHAHAH','2025-05-09 06:22:43'),(6,1,'Guys I lost my pencil','My poor pencil. Poor pencil :(','2025-05-09 06:23:07'),(7,2,'Le Petit Prince','Lorsque j&#039;avais six ans j&#039;ai vu, une fois, une magnifique image, dans un livre sur la forêt vierge qui s&#039;appelait &quot;Histoires Vécues&quot;. Ça représentait un serpent boa qui avalait un fauve. Voilà la copie du dessin.','2025-05-09 06:24:19'),(8,1,'100 Men VS 1 Gorilla','Y&#039;all signing up??? \nIma be swinging at the gorilla during the fight &gt;:)','2025-05-09 06:29:36'),(9,3,'GORILLA BEATS UP 100 MEN','vro....','2025-05-09 06:31:10');
+INSERT INTO `posts` VALUES (1,1,'test post','meow','2025-05-09 00:00:56'),(2,3,'Man I love jellybeans','mmmmm jellybeans..... Jelly Jelly jellybeans... They taste like buttons yummy yommy yommer yummemyumymyumymymymuymym','2025-05-09 06:19:24'),(3,2,'BRUH','BRUUUUUHH BRUUHHRBURBRHRH','2025-05-09 06:21:19'),(4,1,'guys..','Yo chat is anyone schizophrenic??? Just me?? damn bro...','2025-05-09 06:22:27'),(5,3,'WOOOOFOFOOWOFOWFO','AHHAHHAHAHAH','2025-05-09 06:22:43'),(6,1,'Guys I lost my pencil','My poor pencil. Poor pencil :(','2025-05-09 06:23:07'),(7,2,'Le Petit Prince','Lorsque j&#039;avais six ans j&#039;ai vu, une fois, une magnifique image, dans un livre sur la forêt vierge qui s&#039;appelait &quot;Histoires Vécues&quot;. Ça représentait un serpent boa qui avalait un fauve. Voilà la copie du dessin.','2025-05-09 06:24:19'),(8,1,'100 Men VS 1 Gorilla','Y&#039;all signing up??? \nIma be swinging at the gorilla during the fight &gt;:)','2025-05-09 06:29:36'),(9,3,'GORILLA BEATS UP 100 MEN','vro....','2025-05-09 06:31:10'),(10,4,'Hi World!','hey guys this is a cool project! :)','2025-05-09 16:52:02'),(11,1,'meow','meow','2025-05-09 16:53:03');
 /*!40000 ALTER TABLE `posts` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -92,7 +92,7 @@ CREATE TABLE `users` (
   UNIQUE KEY `email` (`email`),
   UNIQUE KEY `username` (`username`),
   KEY `idx_username` (`username`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -101,7 +101,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'meow@meow.com','meow','$2y$10$r9vRWGhY7f.BBdhgvwLQ5OaRMGsifMrEJ3PDc7/sl.1/GmQWBH89W','2025-05-08 23:01:36'),(2,'woof@woof.com','woof','$2y$10$WqxWtdj8KGiVkFQr1fn/LOX5YrR5ghC9NwPHW6mTJiF5KV7s9ZB7q','2025-05-09 06:16:01'),(3,'bark@bark.com','bark','$2y$10$GhOhOVp9Lflc8POPtfVhFu0x1L/JvJuO74s9mOBbYJ5n.vToiyiMm','2025-05-09 06:16:23');
+INSERT INTO `users` VALUES (1,'meow@meow.com','meow','$2y$10$r9vRWGhY7f.BBdhgvwLQ5OaRMGsifMrEJ3PDc7/sl.1/GmQWBH89W','2025-05-08 23:01:36'),(2,'woof@woof.com','woof','$2y$10$WqxWtdj8KGiVkFQr1fn/LOX5YrR5ghC9NwPHW6mTJiF5KV7s9ZB7q','2025-05-09 06:16:01'),(3,'bark@bark.com','bark','$2y$10$GhOhOVp9Lflc8POPtfVhFu0x1L/JvJuO74s9mOBbYJ5n.vToiyiMm','2025-05-09 06:16:23'),(4,'hello@email.com','hello','$2y$10$aBAloZCDPuaiAPXz/IKAJ.imGLgF/WwnjLEwaVSzIvbjSHzLN.Sfe','2025-05-09 16:50:37');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -114,4 +114,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-05-08 23:36:04
+-- Dump completed on 2025-05-09 10:19:11
