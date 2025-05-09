@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - ReadIt</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- we used bootstrap for css via jsdelivr // since we aren't using node.js  (lol)-->
     <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <!-- This is our website logo icon-->
 </head>
+
 <body class="bg-light">
     <div class="container py-5">
         <div class="row justify-content-center">
@@ -43,7 +46,7 @@
             const password = document.getElementById('password').value.trim();
             const messageDiv = document.getElementById('message');
 
-            // Reset message
+            // clear message when loadin page
             messageDiv.classList.add('d-none');
 
             try {
@@ -59,7 +62,7 @@
                     throw new Error(data.error || 'Login failed');
                 }
 
-                // Redirect to main.html on successful login
+                // redirecting to main.html after login
                 window.location.href = 'main.html';
             } catch (error) {
                 showMessage(error.message, 'danger');

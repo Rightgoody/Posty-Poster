@@ -4,37 +4,31 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// Error reporting (disable in production)
+// show errors muhahah 
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 ini_set('log_errors', 1);
 ini_set('error_log', '/var/log/php/readit_api.log');
 
-// Load configuration
+// load configuration file using config.php
 require_once __DIR__ . '/config.php';
 
 
-// Detect if running from the command line
-if (php_sapi_name() === 'cli') {
-    // Simulate HTTP variables for CLI
-    $method = $argv[1] ?? 'GET'; // First argument is the HTTP method
-    parse_str($argv[2] ?? '', $_GET); // Second argument is the query string
-    $input = json_decode($argv[3] ?? '{}', true); // Third argument is the JSON input
-} else {
-    // Web server environment
-    $method = $_SERVER['REQUEST_METHOD'];
-    $input = json_decode(file_get_contents('php://input'), true) ?? [];
-}
 
-// Database connection
+// local server environment
+$method = $_SERVER['REQUEST_METHOD'];
+$input = json_decode(file_get_contents('php://input'), true) ?? [];
+
+// connecting to database
 $db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
+// if error when connecting
 if ($db->connect_error) {
     error_log("Database connection failed: " . $db->connect_error);
     die(json_encode(['error' => 'Service unavailable']));
 }
 
-// Get action from query string
+// get action from query string
 $action = $_GET['action'] ?? '';
 
 // Rate limiting function
@@ -52,7 +46,7 @@ function rateLimit($key, $limit = 10, $timeout = 60) {
     return true;
 }
 
-// Main router
+// method
 switch ($action) {
     case 'register':
         if ($method === 'POST') {
@@ -81,31 +75,14 @@ switch ($action) {
         }
         break;
         
-    case 'create_reply':
-        if ($method === 'POST') {
-            verifySession();
-            createReply($db, $input);
-        }
-        break;
-        
-    case 'get_replies':
-        if ($method === 'GET') {
-            getReplies($db, $_GET['post_id'] ?? 0);
-        }
-        break;
-        
     default:
         http_response_code(404);
         echo json_encode(['error' => 'Endpoint not found']);
         break;
 }
 
-// =====================
-// CORE FUNCTIONS
-// =====================
-
+// business logic
 function registerUser($db, $data) {
-    // Validate input
     $required = ['email', 'username', 'password'];
     foreach ($required as $field) {
         if (empty($data[$field])) {
@@ -113,8 +90,6 @@ function registerUser($db, $data) {
             die(json_encode(['error' => "$field is required"]));
         }
     }
-
-    // Sanitize
     $email = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
     $username = preg_replace('/[^a-zA-Z0-9_]/', '', $data['username']);
     $password = password_hash($data['password'], PASSWORD_BCRYPT);
@@ -130,7 +105,7 @@ function registerUser($db, $data) {
     }
 
     try {
-        // Check if user exists
+        // create user
         $stmt = $db->prepare("SELECT id FROM users WHERE email = ? OR username = ?");
         $stmt->bind_param("ss", $email, $username);
         $stmt->execute();
@@ -141,7 +116,7 @@ function registerUser($db, $data) {
             die(json_encode(['error' => 'Username or email already exists']));
         }
 
-        // Create user
+        // create user in local database
         $stmt = $db->prepare("INSERT INTO users (email, username, password) VALUES (?, ?, ?)");
         $stmt->bind_param("sss", $email, $username, $password);
 
@@ -151,12 +126,14 @@ function registerUser($db, $data) {
             throw new Exception($db->error);
         }
     } catch (Exception $e) {
+        //throw an error if logic error
         error_log("Registration Error: " . $e->getMessage());
         http_response_code(500);
         echo json_encode(['error' => 'Registration failed']);
     }
 }
 
+//login user with existing credentials
 function loginUser($db, $data) {
     if (empty($data['username']) || empty($data['password'])) {
         http_response_code(400);
@@ -184,7 +161,7 @@ function loginUser($db, $data) {
             die(json_encode(['error' => 'Invalid credentials']));
         }
 
-        // Start secure session
+        // start session
         session_start([
             'cookie_httponly' => true,
             'cookie_secure' => true,
@@ -209,7 +186,9 @@ function loginUser($db, $data) {
     }
 }
 
+// creating a post
 function createPost($db, $data) {
+    // check if user is logged in
     if (empty($data['title']) || empty($data['content']) || empty($_SESSION['user_id'])) {
         http_response_code(400);
         die(json_encode(['error' => 'Missing required fields']));
@@ -229,12 +208,14 @@ function createPost($db, $data) {
             throw new Exception($db->error);
         }
     } catch (Exception $e) {
+        //throw an error if logic error
         error_log("Post Creation Error: " . $e->getMessage());
         http_response_code(500);
         echo json_encode(['error' => 'Failed to create post']);
     }
 }
 
+//retrieving posts
 function getPosts($db, $page = 1) {
     $per_page = 10;
     $offset = ($page - 1) * $per_page;
@@ -258,81 +239,14 @@ function getPosts($db, $page = 1) {
 
         echo json_encode(['success' => true, 'posts' => $posts]);
     } catch (Exception $e) {
+        //throw an error if logic error
         error_log("Get Posts Error: " . $e->getMessage());
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch posts']);
     }
 }
 
-function createReply($db, $data) {
-    if (empty($data['post_id']) || empty($data['content']) || empty($_SESSION['user_id'])) {
-        http_response_code(400);
-        die(json_encode(['error' => 'Missing required fields']));
-    }
-
-    $post_id = (int)$data['post_id'];
-    $content = htmlspecialchars($data['content'], ENT_QUOTES);
-    $user_id = $_SESSION['user_id'];
-
-    try {
-        // Verify post exists
-        $check = $db->prepare("SELECT id FROM posts WHERE id = ?");
-        $check->bind_param("i", $post_id);
-        $check->execute();
-        
-        if ($check->get_result()->num_rows === 0) {
-            http_response_code(404);
-            die(json_encode(['error' => 'Post not found']));
-        }
-
-        $stmt = $db->prepare("INSERT INTO replies (post_id, user_id, content) VALUES (?, ?, ?)");
-        $stmt->bind_param("iis", $post_id, $user_id, $content);
-
-        if ($stmt->execute()) {
-            echo json_encode(['success' => true, 'reply_id' => $stmt->insert_id]);
-        } else {
-            throw new Exception($db->error);
-        }
-    } catch (Exception $e) {
-        error_log("Reply Creation Error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to create reply']);
-    }
-}
-
-function getReplies($db, $post_id) {
-    $post_id = (int)$post_id;
-    
-    if ($post_id <= 0) {
-        http_response_code(400);
-        die(json_encode(['error' => 'Invalid post ID']));
-    }
-
-    try {
-        $stmt = $db->prepare("
-            SELECT r.id, r.content, r.created_at, u.username
-            FROM replies r
-            JOIN users u ON r.user_id = u.id
-            WHERE r.post_id = ?
-            ORDER BY r.created_at ASC
-        ");
-        $stmt->bind_param("i", $post_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-
-        $replies = [];
-        while ($row = $result->fetch_assoc()) {
-            $replies[] = $row;
-        }
-
-        echo json_encode(['success' => true, 'replies' => $replies]);
-    } catch (Exception $e) {
-        error_log("Get Replies Error: " . $e->getMessage());
-        http_response_code(500);
-        echo json_encode(['error' => 'Failed to fetch replies']);
-    }
-}
-
+// verify session -> throw error message if business logic error
 function verifySession() {
     session_start([
         'cookie_httponly' => true,
